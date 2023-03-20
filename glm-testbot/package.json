@@ -1,0 +1,21 @@
+{
+  "name": "koishi-plugin-glm-testbot",
+  "description": "感谢42和风佬提供的技术支持，chatglm青春版问世了",
+  "version": "0.9.9",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "MIT",
+  "scripts": {},
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin"
+  ],
+  "peerDependencies": {
+    "koishi": "4.12.0"
+  }
+}
