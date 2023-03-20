@@ -1,1 +1,1 @@
-# glm-textbot
+# glm-testbot
