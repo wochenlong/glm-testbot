@@ -7,9 +7,11 @@ export const usage = `
 
 原来的功能已经全部迁移到glm-bot中，此版本用于测试，因此版本会比glm-bot快一些
 
-注：此版本中服务器地址已经写死，api提供者为[t4wefan](https://forum.koishi.xyz/u/t4wefan)
+注：此版本中设置了服务器的默认地址，api提供者为[t4wefan](https://forum.koishi.xyz/u/t4wefan)
 
-因此地址栏中无需输入任何服务器地址
+因此地址栏中无需输入任何服务器地址，但你也可以填自己的服务器地址，格式：https://xxxxx/
+
+
 
 glm命令的别名是chat，二者等同
 
@@ -34,12 +36,12 @@ glm命令的别名是chat，二者等同
 
 export interface Config {
   myServerUrl: string;
-  publicUrl: string;
 }
 
 export const Config: Schema<Config> = Schema.object({
-  myServerUrl: Schema.string().description("服务器地址1").default("无需输入"),
-  publicUrl: Schema.string().description("服务器地址2").default("无需输入"),
+  myServerUrl: Schema.string()
+    .description("后端服务器地址，不输入时采用t4的默认后端")
+    .default(undefined),
 });
 
 export async function apply(ctx, config: Config) {
@@ -64,17 +66,12 @@ export async function apply(ctx, config: Config) {
 
   var memory_id = mathRandomInt(1, 1000000);
 
-  "https://api.chat.t4wefan.pub/chatglm?msg=" +
-    String(
-      "" + String("&usrid=" + String("" + String("" + String(memory_id))))
-    );
-
   ctx
     .command("glm", "与chatglm对话")
     .alias("chat")
     .action(async ({ session }, ...args) => {
       {
-        let api_address = "https://api.chat.t4wefan.pub/" + "chatglm?msg=";
+        let api_address = config.myServerUrl + "chatglm?msg=";
         {
           let ask_content = subsequenceFromStartLast(session.content, 5);
           {
