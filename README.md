@@ -2,7 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-glm-testbot?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-glm-testbot)
 
-GLM Testbot 是一个基于 [Koishi]([https://koishi.js.org/](https://github.com/koishijs) 和 [ChatGLM](https://github.com/THUDM/ChatGLM-6B) 的对话机器人插件，可以让你与一个基于语言模型的聊天机器人对话。通过使用该插件，你可以快速测试 ChatGLM 的对话效果。
+GLM Testbot 是一个基于 [Koishi](https://github.com/koishijs) 和 [ChatGLM](https://github.com/THUDM/ChatGLM-6B) 的对话机器人插件，可以让你与一个基于语言模型的聊天机器人对话。通过使用该插件，你可以快速测试 ChatGLM 的对话效果。
 
 ## 安装
 
