@@ -20,7 +20,7 @@ GLM Testbot 是一个基于 [Koishi](https://koishi.js.org/) 和 [ChatGLM](https
 
 在 Koishi 中，你可以通过 `glm` 或 `chat` 命令来与 ChatGLM 对话。
 
-使用 `glm+内容` 命令来与 ChatGLM 对话。
+使用 `glm` 或`chat`命令来与 ChatGLM 对话。
 
 示例：
 
