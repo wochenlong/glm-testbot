@@ -153,7 +153,7 @@ export async function apply(ctx, config: Config) {
     .action(async ({ session }, text) => {
       const apiAddress = "服务器地址" + "chatglm?msg=";
       const defaultText =
-        "chatglm?msg=用尽可能多的英文标签详细的描述一幅画面，用碎片化的单词标签而不是句子去描述这幅画，描述词尽量丰富，每个单词之间用逗号分隔，例如在描述白发猫娘的时候，你应该用：white hair，cat girl，cat ears，cute，girl，beautiful，lovely等英文标签词汇。你现在要描述的是：";
+        "用尽可能多的英文标签详细的描述一幅画面，用碎片化的单词标签而不是句子去描述这幅画，描述词尽量丰富，每个单词之间用逗号分隔，例如在描述白发猫娘的时候，你应该用：white hair，cat girl，cat ears，cute，girl，beautiful，lovely等英文标签词汇。你现在要描述的是：";
       const userText = defaultText + text;
       const session_id = [
         "&source=blockly_public",
