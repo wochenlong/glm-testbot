@@ -5,12 +5,7 @@ export const name = "glm-testbot";
 export const usage = `
 ### 用前需知
 
-原来的功能已经全部迁移到glm-bot中，此版本用于测试，因此版本会比glm-bot快一些
-
-注：此版本中设置了服务器的默认地址，api提供者为[t4wefan](https://forum.koishi.xyz/u/t4wefan)
-
-因此地址栏中无需输入任何服务器地址，但你也可以填自己的服务器地址，格式：https://xxxxx/
-
+此为测试版本，服务器地址已经写死，api提供者为[t4wefan](https://forum.koishi.xyz/u/t4wefan)
 
 
 glm命令的别名是chat，二者等同
@@ -19,29 +14,27 @@ glm命令的别名是chat，二者等同
 
 使用“chat/glm+内容”来与ChatGLM对话
 
-使用"chat id"来显示全局对话id
-
 使用”chat 重置对话“来重置当前对话
 
-使用“chat 加载猫猫/角色”来要求glm扮演某个角色，默认角色为猫娘，可以在本地化中修改
+使用“chat 加载”来要求glm扮演猫娘
 
-可在本地化文件commands.glmteach.role中修改你的“洗脑文字”
-
-强调：请求达到上限机器人不回复，此时用”chat 重置对话“命令重置记忆即可
-
-
+使用“ glmmtg +内容 ” 来要求chatglm帮你生成绘画tag
 
 
 `;
 
 export interface Config {
   myServerUrl: string;
+  send_glmmtg_response: boolean;
+  prefix: string;
 }
 
 export const Config: Schema<Config> = Schema.object({
-  myServerUrl: Schema.string()
-    .description("后端服务器地址，不输入时采用t4的默认后端")
-    .default(undefined),
+  myServerUrl: Schema.string().description("后端服务器地址").default(""),
+  send_glmmtg_response: Schema.boolean()
+    .description("使用glmmtg的时候是否会发送tag到会话框")
+    .default(false),
+  prefix: Schema.string().description("跑图机器人的前缀").default("rr"),
 });
 
 export async function apply(ctx, config: Config) {
@@ -64,113 +57,120 @@ export async function apply(ctx, config: Config) {
     return sequence.slice(start, end);
   }
 
-  var memory_id = mathRandomInt(1, 1000000);
+  var chat_id = mathRandomInt(1, 1000000);
+
+  var chat_api_address = "服务器地址" + "chatglm?msg=";
+
+  var preset_api_address = "服务器地址";
 
   ctx
     .command("glm", "与chatglm对话")
     .alias("chat")
     .action(async ({ session }, ...args) => {
       {
-        let api_address = config.myServerUrl + "chatglm?msg=";
-        {
-          let ask_content = subsequenceFromStartLast(session.content, 5);
+        let msg = subsequenceFromStartLast(session.content, 4).trim(),
+          session_id = [
+            "&source=blockly_public",
+            "&usrid=|channel_id=",
+            session.channelId,
+            "|user_id=",
+            session.userId,
+            "|chat_id=",
+            chat_id,
+          ].join(""),
+          response = "hello";
+        if (args[0] == "load" || args[0] == "加载") {
           {
-            let user_id =
-              "&usrid=|t4wefan's public" +
-              String(
-                "|channel_id=" +
-                  String(
-                    String(session.channelId) +
-                      String(
-                        "|usr_id=" +
-                          String(
-                            String(session.userId) +
-                              String(
-                                "|secret=" + String(String(memory_id) + "|")
-                              )
-                          )
-                      )
-                  )
-              );
+            let preset_id = 100000 + Number(args[1]);
+            response = await ctx.http.get(
+              [chat_api_address, "clear", session_id].join(""),
+              { responseType: "text" }
+            );
+            await session.send(
+              ["正在重置对话，加载预设＠", preset_id, "......", response].join(
+                ""
+              )
+            );
             {
-              let response = "None";
-              if (ask_content == "") {
-                return await ctx.http.get(
-                  String(api_address) + String("undefined" + String(user_id)),
-                  { responseType: "" }
-                );
-              }
-              if (args[0] == "加载角色" || args[0] == "加载猫猫") {
-                await session.send(
-                  "正在加载本地化文件当中的预设（默认为猫娘），" +
-                    String(
-                      "对话id即将重置...." +
-                        String(
-                          await ctx.http.get(
-                            String(String(api_address) + "clear") +
-                              String(user_id),
-                            { responseType: "" }
-                          )
-                        )
-                    )
-                );
-                const role = session.text("commands.glmteach.role");
-                return await ctx.http.get(
-                  String(api_address) + String(role + " ​" + String(user_id)),
-                  { responseType: "text" }
-                );
-              }
-              if (args[0] == "help") {
-                return await ctx.http.get(
-                  String(api_address) + String("undefined" + String(user_id)),
-                  { responseType: "" }
-                );
-              }
-              if (args[0] == "id") {
+              let preset = await ctx.http.get(
+                [preset_api_address, preset_id, ".txt"].join(""),
+                { responseType: "text" }
+              );
+              if (preset == "404") {
                 return (
-                  "现在的对话id是 " +
-                  String(
-                    String(memory_id) +
-                      " 你可以通过“chat 重置对话”来重置当前对话，或者通过“chat 恢复对话+id”来恢复对话（已弃用）"
-                  )
+                  String(h("at", { id: session.userId })) +
+                  "你指定的预设不存在捏"
                 );
-              }
-              if (args[0] == "重置对话") {
-                return (
-                  "正在重置当前对话......" +
-                  String(
-                    await ctx.http.get(
-                      String(api_address) + String("clear" + String(user_id)),
-                      { responseType: "text" }
-                    )
-                  )
-                );
-              }
-              if (args[0] == "恢复对话") {
-                memory_id = args[1];
-                return "已恢复对话id " + String(memory_id);
-              }
-              if (args[0] == "重置id") {
-                memory_id = Number(memory_id) + mathRandomInt(1, 9999999);
-                return "已重置全局记忆,现在全局对话id为" + String(memory_id);
               } else {
                 response = await ctx.http.get(
-                  String(api_address) +
-                    String(String(ask_content) + String(user_id)),
+                  [chat_api_address, preset, session_id].join(""),
                   { responseType: "text" }
                 );
                 await session.send(
-                  String(h("at", { id: session.userId })) + String(response)
+                  [
+                    h("at", { id: session.userId }),
+                    "已加载预设＠",
+                    preset_id,
+                  ].join("")
                 );
-                logger.debug(
-                  "ChatGLM" + String(String(user_id) + String(response))
-                );
-                return null;
+                return response;
               }
-              return null;
             }
           }
         }
+        if (msg == "重置对话" || msg == "重置") {
+          response = await ctx.http.get(
+            [chat_api_address, "clear", session_id].join(""),
+            { responseType: "text" }
+          );
+          return String(h("at", { id: session.userId })) + String(response);
+        }
+        if (args[0] == null || args[0] == "help") {
+          return (
+            String(h("at", { id: session.userId })) +
+            String(
+              await ctx.http.get(
+                "https://drive.t4wefan.pub/d/koishi/chatglm_blockly/help.txt",
+                { responseType: "text" }
+              )
+            )
+          );
+        } else {
+          response = await ctx.http.get(
+            [chat_api_address, msg, session_id].join(""),
+            { responseType: "text" }
+          );
+          return String(h("at", { id: session.userId })) + String(response);
+        }
       }
+    });
+
+  const cmd1 = ctx
+    .command(
+      "glmmtg <text:text>",
+      "输入你想画的画面，发送给ChatGLM，让ChatGLM来帮你写tag"
+    )
+    .action(async ({ session }, text) => {
+      const apiAddress = "服务器地址" + "chatglm?msg=";
+      const defaultText =
+        "chatglm?msg=用尽可能多的英文标签详细的描述一幅画面，用碎片化的单词标签而不是句子去描述这幅画，描述词尽量丰富，每个单词之间用逗号分隔，例如在描述白发猫娘的时候，你应该用：white hair，cat girl，cat ears，cute，girl，beautiful，lovely等英文标签词汇。你现在要描述的是：";
+      const userText = defaultText + text;
+      const session_id = [
+        "&source=blockly_public",
+        "&usrid=|channel_id=",
+        session.channelId,
+        "|user_id=",
+        session.userId,
+        "|chat_id=",
+        chat_id,
+      ];
+      const response = await ctx.http.get(apiAddress + userText + session_id);
+      if (config.send_glmmtg_response) {
+        await session.send(`${config.prefix} ${response}`);
+      }
+      await session.execute(`${config.prefix} "${response}"`);
+      await ctx.http.get(apiAddress + "chatglm?msg=clear" + session_id, {
+        responseType: "text",
+      });
     });
 }
