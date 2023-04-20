@@ -1,7 +1,13 @@
 {
   "name": "koishi-plugin-glm-testbot",
-  "description": "感谢42和风佬提供的技术支持，chatglm青春版问世了",
-  "version": "1.0.0",
+  "description": "一款免费的、开箱即用的chatglm对话插件，支持语音输出，基于t4wefan的blockly插件开发",
+  "homepage": "https://github.com/wochenlong/glm-testbot",
+  "author": "windsing <oulongchen273@outlook.com>",
+  "contributors": [
+    "windsing <oulongchen273@outlook.com>",
+    "t4wefan <guanghoushi@gmail.com@qq.com>"
+  ],
+  "version": "1.2.5",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -15,7 +21,14 @@
     "koishi",
     "plugin"
   ],
+  "koishi": {
+    "service": {
+      "optional": [
+        "vits"
+      ]
+    }
+  },
   "peerDependencies": {
-    "koishi": "4.12.0"
+    "koishi": "^4.12.0"
   }
 }
